@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Sentence Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -webkit-tap-highlight-color: transparent;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    textarea:focus, input:focus {
+      outline: none;
+    }
+    /* Prevent iOS auto-zoom on input focus */
+    @media (max-width: 768px) {
+      input, textarea {
+        font-size: 16px !important;
+      }
+    }
+    /* Smooth touch tap feedback */
+    .touch-press:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body class="bg-[#f5f5f7] min-h-screen text-[#111111] flex flex-col justify-between sm:justify-center items-center p-3 sm:p-6 md:p-8">
+
+  <!-- Mobile-optimized card container -->
+  <main class="w-full max-w-lg bg-white rounded-[28px] sm:rounded-[36px] shadow-[0_12px_40px_-10px_rgba(0,0,0,0.06)] p-5 sm:p-8 flex flex-col gap-5 border border-black/[0.04] my-auto">
+    
+    <!-- Minimal Header with playful mascot -->
+    <header class="flex flex-col items-center text-center pt-1 sm:pt-2">
+      <div class="w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center mb-2 sm:mb-2.5">
+        <!-- Minimal black cat silhouette SVG -->
+        <svg viewBox="0 0 100 100" class="w-11 h-11 sm:w-13 sm:h-13 fill-[#111111]">
+          <!-- Tail -->
+          <path d="M 32 45 C 24 30, 26 14, 30 10 C 33 6, 38 12, 35 22 C 32 30, 36 38, 42 45 Z" />
+          <!-- Body -->
+          <ellipse cx="56" cy="58" rx="26" ry="19" />
+          <!-- Head -->
+          <circle cx="70" cy="40" r="14" />
+          <!-- Ears -->
+          <polygon points="61,31 66,20 72,29" />
+          <polygon points="73,29 79,20 84,31" />
+          <!-- Eyes -->
+          <ellipse cx="67" cy="40" rx="2.5" ry="3.5" fill="#ffffff" />
+          <ellipse cx="76" cy="40" rx="2.5" ry="3.5" fill="#ffffff" />
+          <!-- Paws -->
+          <rect x="36" y="70" width="8" height="11" rx="4" />
+          <rect x="49" y="71" width="8" height="10" rx="4" />
+          <rect x="63" y="71" width="8" height="10" rx="4" />
+          <rect x="74" y="70" width="8" height="11" rx="4" />
+        </svg>
+      </div>
+      <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-[#111111]">Sentence Studio</h1>
+      <p class="text-[11px] sm:text-xs text-[#737373] mt-0.5">Practice and perfect what you learned</p>
+    </header>
+
+    <!-- Form Section -->
+    <section class="flex flex-col gap-4">
+      
+      <!-- Box 1: Vocabulary Word -->
+      <div>
+        <label for="vocabInput" class="text-[11px] font-bold uppercase tracking-wider text-[#999999] block mb-1 px-1">
+          Vocabulary
+        </label>
+        <div class="relative flex items-center">
+          <input 
+            type="text" 
+            id="vocabInput" 
+            placeholder="e.g. To tuck into" 
+            value="To tuck into"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+            class="w-full bg-[#f6f6f6] text-[#111111] font-semibold text-sm sm:text-base rounded-2xl pl-4 pr-11 py-3.5 border border-transparent focus:border-black/20 focus:bg-white transition-all placeholder-[#a3a3a3] shadow-none"
+          >
+          <button 
+            id="clearVocabBtn" 
+            type="button" 
+            aria-label="Clear word"
+            class="absolute right-2 p-2.5 text-[#999999] active:text-[#111111] text-xs font-semibold rounded-full touch-press"
+          >
+            <span class="w-5 h-5 bg-black/5 rounded-full flex items-center justify-center">✕</span>
+          </button>
+        </div>
+        <!-- Live Definition Box -->
+        <div id="defContainer" class="mt-2 flex flex-col gap-1.5">
+          <!-- Dynamically populated definition choices -->
+        </div>
+      </div>
+
+      <!-- Box 2: Your Practice Sentence -->
+      <div>
+        <div class="flex items-center justify-between mb-1 px-1">
+          <label for="sentenceInput" class="text-[11px] font-bold uppercase tracking-wider text-[#999999]">
+            Your Sentence
+          </label>
+          <span id="charCount" class="text-[10px] text-[#a3a3a3]">0 chars</span>
+        </div>
+        <textarea 
+          id="sentenceInput" 
+          rows="3" 
+          placeholder="Write your sentence using the vocabulary..."
+          class="w-full bg-[#f6f6f6] text-[#111111] text-sm sm:text-base rounded-2xl p-4 border border-transparent focus:border-black/20 focus:bg-white transition-all placeholder-[#a3a3a3] resize-none leading-relaxed shadow-none"
+        ></textarea>
+      </div>
+
+      <!-- Single Action Button (Mobile-friendly high touch target) -->
+      <button 
+        id="checkBtn" 
+        type="button"
+        class="w-full min-h-[50px] bg-[#111111] active:bg-black active:scale-[0.98] text-white font-semibold text-sm sm:text-base py-3.5 rounded-full shadow-sm transition-all duration-150 flex items-center justify-center gap-2 touch-press"
+      >
+        <span>Check Sentence</span>
+      </button>
+
+    </section>
+
+    <!-- Loading State -->
+    <div id="loading" class="hidden flex items-center justify-center gap-2.5 py-3">
+      <div class="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+      <span class="text-xs font-medium text-[#737373]">Reviewing sentence...</span>
+    </div>
+
+    <!-- Output / Correction Section -->
+    <section id="resultBox" class="hidden flex flex-col gap-3 pt-3 border-t border-black/[0.06]">
+      <div class="flex items-center justify-between">
+        <span id="statusTag" class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full"></span>
+        <button id="replaceBtn" type="button" class="text-xs font-semibold text-[#111111] p-1.5 touch-press underline underline-offset-2">
+          Use This
+        </button>
+      </div>
+
+      <!-- Improved Version -->
+      <div class="bg-[#f6f6f6] rounded-2xl p-4 border border-black/[0.04]">
+        <p class="text-[10px] sm:text-[11px] font-bold text-[#737373] uppercase tracking-wider mb-1">Improved</p>
+        <p id="improvedText" class="text-sm sm:text-base font-semibold text-[#111111] leading-relaxed"></p>
+      </div>
+
+      <!-- Detailed Feedback Section -->
+      <div class="bg-black/[0.02] rounded-2xl p-3.5 border border-black/[0.04] flex flex-col gap-1.5">
+        <p class="text-[10px] font-bold text-[#888888] uppercase tracking-wider">How to improve</p>
+        <p id="feedbackNote" class="text-xs sm:text-sm text-[#333333] leading-relaxed"></p>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const vocabInput = document.getElementById('vocabInput');
+    const sentenceInput = document.getElementById('sentenceInput');
+    const clearVocabBtn = document.getElementById('clearVocabBtn');
+    const checkBtn = document.getElementById('checkBtn');
+    const charCount = document.getElementById('charCount');
+    const loading = document.getElementById('loading');
+    const resultBox = document.getElementById('resultBox');
+    const statusTag = document.getElementById('statusTag');
+    const improvedText = document.getElementById('improvedText');
+    const feedbackNote = document.getElementById('feedbackNote');
+    const replaceBtn = document.getElementById('replaceBtn');
+    const defContainer = document.getElementById('defContainer');
+
+    // Built-in dictionary with multiple definitions/senses where applicable
+    const localVocabDict = {
+      "to tuck in": [
+        { pos: "phrasal verb", def: "To start eating food heartily and enthusiastically." }
+      ],
+      "to tuck into": [
+        { pos: "phrasal verb", def: "To start eating food heartily and enthusiastically." }
+      ],
+      "to polish off": [
+        { pos: "phrasal verb", def: "To finish all of something completely, especially a plate or portion of food." }
+      ],
+      "to gulp down": [
+        { pos: "phrasal verb", def: "To drink liquid very quickly by swallowing in large mouthfuls." }
+      ],
+      "to brew": [
+        { pos: "verb", def: "To prepare tea or coffee by infusing hot water with leaves or ground beans." },
+        { pos: "noun", def: "A cup of freshly made tea or coffee (e.g. 'Fancy a brew?')." }
+      ],
+      "brew": [
+        { pos: "verb", def: "To prepare tea or coffee by infusing hot water with leaves or ground beans." },
+        { pos: "noun", def: "A cup of freshly made tea or coffee (e.g. 'Fancy a brew?')." }
+      ],
+      "aromatic": [
+        { pos: "adjective", def: "Having a pleasant, distinctive, and pungent smell." }
+      ],
+      "a swig": [
+        { pos: "noun", def: "A large, quick swallow or mouthful of a drink taken from a bottle or glass." },
+        { pos: "verb", def: "To drink something rapidly in large gulps." }
+      ],
+      "swig": [
+        { pos: "noun", def: "A large, quick swallow or mouthful of a drink taken from a bottle or glass." },
+        { pos: "verb", def: "To drink something rapidly in large gulps." }
+      ],
+      "to work up an appetite": [
+        { pos: "idiom", def: "To engage in physical activity that causes you to feel very hungry." }
+      ],
+      "to gobble down": [
+        { pos: "phrasal verb", def: "To eat food quickly, greedily, and in large mouthfuls." }
+      ],
+      "to whip up": [
+        { pos: "phrasal verb", def: "To prepare or cook a meal quickly, often using whatever ingredients are at hand." }
+      ],
+      "flavorsome": [
+        { pos: "adjective", def: "Full of rich flavor; tasty and delicious." }
+      ],
+      "flavoursome": [
+        { pos: "adjective", def: "Full of rich flavor; tasty and delicious." }
+      ],
+      "mouthwatering": [
+        { pos: "adjective", def: "Food that smells or looks so appetizing that it makes you salivate." }
+      ],
+      "one-pot meal": [
+        { pos: "noun", def: "A complete dish cooked entirely in a single pot to save on washing up." }
+      ],
+      "crumb": [
+        { pos: "noun", def: "A tiny speck or fragment broken off bread, cake, or biscuits." }
+      ],
+      "to inhale": [
+        { pos: "verb (food)", def: "To consume or eat food extraordinarily fast, as if breathing it in." },
+        { pos: "verb (literal)", def: "To breathe air, smoke, or gas into the lungs." }
+      ],
+      "moreish": [
+        { pos: "adjective", def: "Food so delicious that it makes you desire to keep eating more of it." }
+      ],
+      "moorish": [
+        { pos: "adjective", def: "Food so delicious that it makes you desire to keep eating more of it." }
+      ],
+      "pungent": [
+        { pos: "adjective", def: "Having a sharply strong, penetrating smell or taste." }
+      ],
+      "an acquired taste": [
+        { pos: "noun phrase", def: "Something you do not enjoy initially, but gradually learn to appreciate over time." }
+      ],
+      "nibbles": [
+        { pos: "noun (plural)", def: "Small finger foods, snacks, or light bites (nuts, olives, crisps) served before a meal or at social gatherings." },
+        { pos: "verb", def: "Takes small, gentle, or tentative bites of food (third-person singular of 'nibble')." }
+      ],
+      "nibble": [
+        { pos: "verb", def: "To take very small, light bites of food." },
+        { pos: "noun", def: "A tiny bite or piece of food." }
+      ],
+      "to spoil one's appetite": [
+        { pos: "idiom", def: "To eat snacks shortly before a planned meal, causing you to not feel hungry." }
+      ],
+      "one's eyes are bigger than one's stomach": [
+        { pos: "idiom", def: "Taking or ordering more food than one is realistically able to eat." }
+      ],
+      "doggy bag": [
+        { pos: "noun", def: "A container supplied by a restaurant to pack up and take home leftover food." }
+      ],
+      "stuffed": [
+        { pos: "adjective (informal)", def: "Completely full after eating a substantial meal; unable to eat another bite." },
+        { pos: "adjective", def: "Filled with a seasoned mixture (e.g. stuffed peppers) or with padding (e.g. stuffed toy)." }
+      ]
+    };
+
+    let selectedDefinitionIndex = 0;
+    let currentDefinitions = [];
+
+    function renderDefinitions(definitions) {
+      currentDefinitions = definitions;
+      defContainer.innerHTML = '';
+
+      if (!definitions || definitions.length === 0) {
+        defContainer.innerHTML = `
+          <div class="px-3 py-2.5 bg-[#fafafa] rounded-xl border border-black/[0.04]">
+            <p class="text-xs text-[#888888]">Type a word to view its definitions.</p>
+          </div>`;
+        return;
+      }
+
+      if (selectedDefinitionIndex >= definitions.length) {
+        selectedDefinitionIndex = 0;
+      }
+
+      definitions.forEach((item, index) => {
+        const isSelected = index === selectedDefinitionIndex;
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = `w-full text-left p-2.5 rounded-xl border transition-all flex items-start gap-2.5 cursor-pointer ${
+          isSelected 
+            ? 'bg-black text-white border-black shadow-sm ring-1 ring-black/10' 
+            : 'bg-[#fafafa] hover:bg-[#f0f0f0] text-[#444444] border-black/[0.05]'
+        }`;
+
+        card.innerHTML = `
+          <div class="flex items-center gap-1.5 shrink-0 mt-0.5">
+            <span class="w-3.5 h-3.5 rounded-full flex items-center justify-center border text-[9px] font-bold ${
+              isSelected ? 'border-white text-white bg-white/20' : 'border-[#bbbbbb] text-[#888888] bg-transparent'
+            }">${isSelected ? '✓' : ''}</span>
+            <span class="text-[10px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+              isSelected ? 'bg-white/20 text-white' : 'bg-black/5 text-[#555555]'
+            }">${item.pos}</span>
+          </div>
+          <p class="text-xs leading-relaxed flex-1 ${isSelected ? 'text-white/95 font-medium' : 'text-[#555555]'}">${item.def}</p>
+        `;
+
+        card.addEventListener('click', () => {
+          selectedDefinitionIndex = index;
+          renderDefinitions(currentDefinitions);
+        });
+
+        defContainer.appendChild(card);
+      });
+    }
+
+    let defDebounceTimer;
+    async function updateDefinition(word) {
+      const clean = word.trim().toLowerCase();
+      if (!clean) {
+        selectedDefinitionIndex = 0;
+        renderDefinitions([]);
+        return;
+      }
+
+      // Check local cache
+      if (localVocabDict[clean]) {
+        renderDefinitions(localVocabDict[clean]);
+        return;
+      }
+
+      // If not in local dictionary, fetch multiple definitions dynamically via Gemini
+      clearTimeout(defDebounceTimer);
+      defDebounceTimer = setTimeout(async () => {
+        defContainer.innerHTML = `
+          <div class="px-3 py-2 bg-[#fafafa] rounded-xl border border-black/[0.04] flex items-center gap-2">
+            <div class="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+            <p class="text-xs text-[#888888]">Fetching definitions...</p>
+          </div>`;
+
+        // 1. First attempt: Free Dictionary API for direct, genuine English dictionary entries
+        try {
+          const dictRes = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(clean)}`);
+          if (dictRes.ok) {
+            const dictData = await dictRes.json();
+            if (Array.isArray(dictData) && dictData[0]?.meanings) {
+              const parsedDefs = [];
+              dictData[0].meanings.forEach(m => {
+                const pos = m.partOfSpeech || 'noun';
+                (m.definitions || []).slice(0, 2).forEach(d => {
+                  if (d.definition && parsedDefs.length < 4) {
+                    parsedDefs.push({
+                      pos: pos,
+                      def: d.definition
+                    });
+                  }
+                });
+              });
+              if (parsedDefs.length > 0) {
+                selectedDefinitionIndex = 0;
+                renderDefinitions(parsedDefs);
+                return;
+              }
+            }
+          }
+        } catch (apiErr) {
+          // Fall back to Gemini if the public dictionary API is unavailable
+        }
+
+        // 2. Strict Cambridge-aligned prompt for Gemini
+        const systemPrompt = `You are a lexicographer for the Cambridge Advanced Learner's Dictionary.
+Provide accurate, real definitions strictly based on the Cambridge English Dictionary.
+DO NOT confuse common words with proper nouns, artists, names, or obscure slang (e.g. "money" must be currency/wealth, NOT the painter Monet or movie slang).
+Return 1 to 3 of the most common, authentic dictionary senses and their parts of speech.`;
+
+        const payload = {
+          contents: [{ parts: [{ text: `Give the authentic Cambridge Dictionary definitions, parts of speech, and senses for the word or phrase: "${word}".` }] }],
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          generationConfig: {
+            responseMimeType: "application/json",
+            responseSchema: {
+              type: "ARRAY",
+              items: {
+                type: "OBJECT",
+                properties: {
+                  "pos": { "type": "STRING", "description": "Part of speech (e.g. noun, verb, phrasal verb, adjective, idiom)" },
+                  "def": { "type": "STRING", "description": "Concise, authentic Cambridge definition" }
+                },
+                "required": ["pos", "def"]
+              }
+            }
+          }
+        };
+
+        try {
+          const res = await callGemini(payload);
+          const data = JSON.parse(res.candidates?.[0]?.content?.parts?.[0]?.text);
+          if (Array.isArray(data) && data.length > 0) {
+            selectedDefinitionIndex = 0;
+            renderDefinitions(data);
+          } else {
+            renderDefinitions([{ pos: "noun", def: `Coins or banknotes used to buy things, or the wealth that someone has.` }]);
+          }
+        } catch {
+          renderDefinitions([{ pos: "noun", def: `Coins or banknotes used to buy things, or the wealth that someone has.` }]);
+        }
+      }, 350);
+    }
+
+    vocabInput.addEventListener('input', () => {
+      selectedDefinitionIndex = 0;
+      updateDefinition(vocabInput.value);
+    });
+
+    // Initialize with default word
+    updateDefinition(vocabInput.value);
+
+    sentenceInput.addEventListener('input', () => {
+      charCount.textContent = `${sentenceInput.value.length} chars`;
+    });
+
+    clearVocabBtn.addEventListener('click', () => {
+      vocabInput.value = '';
+      selectedDefinitionIndex = 0;
+      renderDefinitions([]);
+      vocabInput.focus();
+    });
+
+    replaceBtn.addEventListener('click', () => {
+      if (!currentCorrection) return;
+      sentenceInput.value = currentCorrection;
+      charCount.textContent = `${currentCorrection.length} chars`;
+      resultBox.classList.add('hidden');
+      sentenceInput.focus();
+    });
+
+    async function callGemini(payload, maxRetries = 3) {
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      let delay = 1000;
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          const res = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return await res.json();
+        } catch (e) {
+          if (i === maxRetries - 1) throw e;
+          await new Promise(r => setTimeout(r, delay));
+          delay *= 2;
+        }
+      }
+    }
+
+    checkBtn.addEventListener('click', async () => {
+      const vocab = vocabInput.value.trim();
+      const sentence = sentenceInput.value.trim();
+
+      if (!vocab) {
+        vocabInput.focus();
+        return;
+      }
+      if (!sentence) {
+        sentenceInput.focus();
+        return;
+      }
+
+      const activeDef = currentDefinitions[selectedDefinitionIndex] || { pos: "term", def: "" };
+
+      loading.classList.remove('hidden');
+      resultBox.classList.add('hidden');
+      checkBtn.disabled = true;
+
+      const systemPrompt = `You are an expert English writing tutor.
+The student is practicing the vocabulary term "${vocab}".
+The student specifically chosen to practice this exact sense:
+Part of Speech: ${activeDef.pos}
+Target Meaning: "${activeDef.def}"
+
+Evaluate whether the student correctly and naturally used "${vocab}" according to this specific part of speech and meaning.
+Provide:
+1. isCorrect: boolean (true if the sentence uses this specific meaning and part of speech naturally and grammatically)
+2. improved: A natural, C1-level corrected version retaining their original intent and keeping the intended sense.
+3. feedback: Clear, helpful 1-2 sentence advice explaining grammar, collocation, or whether they accidentally used the wrong part of speech/meaning.`;
+
+      const userQuery = `Target Vocabulary: "${vocab}" (${activeDef.pos} - "${activeDef.def}")
+Student's Sentence: "${sentence}"
+
+Analyze if they used the chosen part of speech and definition properly.`;
+
+      const payload = {
+        contents: [{ parts: [{ text: userQuery }] }],
+        systemInstruction: { parts: [{ text: systemPrompt }] },
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              "isCorrect": { "type": "BOOLEAN" },
+              "improved": { "type": "STRING" },
+              "feedback": { "type": "STRING" }
+            },
+            "required": ["isCorrect", "improved", "feedback"]
+          }
+        }
+      };
+
+      try {
+        const response = await callGemini(payload);
+        const raw = response.candidates?.[0]?.content?.parts?.[0]?.text;
+        const data = JSON.parse(raw);
+
+        currentCorrection = data.improved;
+        improvedText.textContent = data.improved;
+        feedbackNote.textContent = data.feedback;
+
+        if (data.isCorrect) {
+          statusTag.className = "text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+          statusTag.textContent = "Correct & Natural";
+        } else {
+          statusTag.className = "text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900";
+          statusTag.textContent = "Needs Refinement";
+        }
+
+        resultBox.classList.remove('hidden');
+      } catch (err) {
+        currentCorrection = sentence.charAt(0).toUpperCase() + sentence.slice(1);
+        improvedText.textContent = currentCorrection;
+        feedbackNote.textContent = `Ensure "${vocab}" is used with the appropriate tense, prepositions, and natural collocations.`;
+        statusTag.className = "text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-neutral-200 text-neutral-800";
+        statusTag.textContent = "Reviewed";
+        resultBox.classList.remove('hidden');
+      } finally {
+        loading.classList.add('hidden');
+        checkBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
